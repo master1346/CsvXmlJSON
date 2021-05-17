@@ -5,6 +5,9 @@ import com.opencsv.CSVReader;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.json.simple.*;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -34,9 +37,7 @@ public class Main {
         list = parseXML(fileName);
 
         String jsonXML = listToJson(list);
-        writeString(jsonXML, "data2.json");
-
-
+       writeString(jsonXML, "data2.json");
     }
 
     private static List<Employee> parseCSV(String[] columnMapping, String fileName) {
@@ -64,39 +65,11 @@ public class Main {
     }
     private static void writeString(String value, String fileName){
         try(FileWriter fileWriter = new FileWriter(fileName)){
-            char[] ch = value.toCharArray();
-            int flag = 0;
-            for(int i = 0; i < ch.length; i++) {
-                if(ch[i] == '[' ){
-                    fileWriter.append(ch[i] + "\n");
-                    continue;
-                }
-                else if(ch[i] == '{' ){
-                    fileWriter.append("   " + ch[i] + "\n");
-                    flag = 1;
-                    continue;
-                }
-                else if(ch[i] == ',' ){
-                    fileWriter.append(ch[i] + "\n");
-                    flag = 1;
-                    continue;
-                }
-                else if(ch[i] == '}' ){
-                    fileWriter.append("\n" + "   " + ch[i]);
-                    continue;
-                }
-                else if(ch[i] == ']' ){
-                    fileWriter.append("\n" + ch[i]);
-                    continue;
-                }else{
-                    if(flag == 1){
-                        flag = 0;
-                        fileWriter.append("      ");
-                    }
-                    fileWriter.append(ch[i]);
-                }
-            }
-        } catch (IOException e) {
+            JSONParser parser = new JSONParser();
+            JSONArray jsonArray = (JSONArray) parser.parse(value);
+            fileWriter.write(jsonArray.toJSONString());
+            fileWriter.flush();
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
     }
